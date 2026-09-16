@@ -374,8 +374,8 @@ export default function TopBar({
   }, [openGroup]);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 h-14 border-b border-white/10 bg-slate-950/35 text-white shadow-[0_1px_24px_rgba(0,0,0,0.28)] backdrop-blur-2xl">
-      <div className="flex h-full items-center gap-3 overflow-visible px-4">
+    <header className="fixed inset-x-0 top-0 z-50 min-h-14 py-1 border-b border-white/10 bg-slate-950/35 text-white shadow-[0_1px_24px_rgba(0,0,0,0.28)] backdrop-blur-2xl">
+      <div className="flex min-h-12 flex-wrap items-center gap-x-3 gap-y-1 overflow-visible px-4">
         <button
           type="button"
           onClick={() => onNavigate("home")}
@@ -387,14 +387,10 @@ export default function TopBar({
           </span>
         </button>
 
-        {/* Menu strip shows at EVERY window width (the app allows resizing to
-            1024). On narrow windows it scrolls horizontally instead of
-            vanishing — hiding it below 1360px left users with no menus. */}
-        <nav
-          ref={navRef}
-          className="min-w-0 shrink overflow-x-auto whitespace-nowrap"
-          style={{ scrollbarWidth: "none" }}
-        >
+        {/* Menu strip shows at EVERY window width. It WRAPS to a second row on
+            narrow windows — never overflow-x-auto, which would clip every
+            dropdown panel that hangs below the strip. */}
+        <nav ref={navRef} className="flex min-w-0 shrink flex-wrap whitespace-nowrap">
           <MagneticMenu className="relative flex items-center gap-0.5" radius="pill">
             <button
               type="button"
