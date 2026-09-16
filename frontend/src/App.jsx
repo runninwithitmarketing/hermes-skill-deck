@@ -121,6 +121,24 @@ export default function App() {
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [selectedSkillId, setSelectedSkillId] = useState(null);
   const [terminalOpen, setTerminalOpen] = useState(false);
+  // First-run top-bar setup: shows ONCE on a fresh install, never again
+  // (a future settings screen can offer a reset).
+  const [navSetupOpen, setNavSetupOpen] = useState(() => {
+    try {
+      return localStorage.getItem("nav-setup-done") !== "1";
+    } catch {
+      return false;
+    }
+  });
+  const finishNavSetup = useCallback((pickOwn) => {
+    try {
+      localStorage.setItem("nav-setup-done", "1");
+    } catch {
+      // localStorage unavailable — closing the card is enough for this session
+    }
+    setNavSetupOpen(false);
+    if (pickOwn) window.dispatchEvent(new CustomEvent("skilldeck-open-nav-editor"));
+  }, []);
   const [theme, setTheme] = useState(getStoredTheme);
   const lastFocusRef = useRef(null);
   const navDepth = useRef(0);
@@ -583,6 +601,36 @@ export default function App() {
   return (
     <div className="desktop-shell min-h-screen overflow-x-clip text-white">
       <div className="desktop-ambient" aria-hidden="true" />
+
+      {/* First-run top-bar setup — shown once on a fresh install. */}
+      {navSetupOpen && !loading && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/45 p-6 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-[2rem] border border-white/12 bg-slate-950/95 p-7 text-center shadow-[0_24px_70px_rgba(0,0,0,0.6)]">
+            <h2 className="font-heading text-xl font-bold text-white">Set up your top bar</h2>
+            <p className="mt-2 text-sm leading-6 text-white/60">
+              Choose how the menu bar at the top of the app looks. You can change it anytime
+              with the <span className="font-semibold text-white/85">+</span> at the end of the bar.
+            </p>
+            <div className="mt-6 flex flex-col gap-2.5">
+              <button
+                type="button"
+                onClick={() => finishNavSetup(false)}
+                className="rounded-2xl border border-white/12 bg-white/8 px-5 py-3 font-ui text-sm font-semibold text-white/85 transition hover:border-white/25 hover:bg-white/14 hover:text-white"
+              >
+                Start with the default menus
+              </button>
+              <button
+                type="button"
+                onClick={() => finishNavSetup(true)}
+                className="rounded-2xl border border-sky-300/30 bg-sky-400/18 px-5 py-3 font-ui text-sm font-bold text-sky-100 transition hover:bg-sky-400/28"
+              >
+                Pick my own menus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <TopBar
         onNavigate={handleNavigate}
         skills={skills}

@@ -324,6 +324,13 @@ export default function TopBar({
   // The user's own menu picks (folder ids). Null = shipped default nav.
   const [navPinned, setNavPinned] = useState(readNavPinned);
 
+  // First-run flow ("pick my own") asks us to open the editor programmatically.
+  useEffect(() => {
+    const openEditor = () => setOpenGroup("__edit__");
+    window.addEventListener("skilldeck-open-nav-editor", openEditor);
+    return () => window.removeEventListener("skilldeck-open-nav-editor", openEditor);
+  }, []);
+
   const togglePinned = (id) => {
     setNavPinned((prev) => {
       const current = prev ?? [];
