@@ -22,6 +22,15 @@ Everything runs locally: the dashboard is a native webview pointed at a FastAPI 
 - **Terminal Mode** — an AI agent (GLM / Claude / OpenAI / DeepSeek) that can search, create, and delete skills in natural language
 - **Read-only browsing** of your `~/.hermes` skills; deletes require agent confirmation
 
+## Screenshots
+
+| | |
+|---|---|
+| ![Dashboard](docs/screenshots/app-dashboard.png) | ![Skill boxes](docs/screenshots/boxes-overview.png) |
+| ![Folder subgroups](docs/screenshots/folder-groups.png) | ![Skill grid](docs/screenshots/skill-grid.png) |
+
+![Terminal Mode](docs/screenshots/terminal-mode.png)
+
 ## Requirements
 
 - macOS
