@@ -28,6 +28,7 @@ Everything runs locally: the dashboard is a native webview pointed at a FastAPI 
 |---|---|
 | ![Dashboard](docs/screenshots/app-dashboard.png) | ![Skill boxes](docs/screenshots/boxes-overview.png) |
 | ![Folder subgroups](docs/screenshots/folder-groups.png) | ![Skill grid](docs/screenshots/skill-grid.png) |
+| ![Cascading menus](docs/screenshots/menu-cascades.png) | ![Quick Access](docs/screenshots/quick-access.png) |
 
 ![Terminal Mode](docs/screenshots/terminal-mode.png)
 
