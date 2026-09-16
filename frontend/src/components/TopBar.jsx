@@ -216,7 +216,7 @@ function NavDropdown({ group, folders, open, onOpen, onClose, onNavigate, skills
       </button>
 
       {open && (
-        <MagneticMenu className={`absolute left-0 top-full z-50 mt-1.5 min-w-[200px] origin-top ${PANEL_CLASS}`} radius="row">
+        <MagneticMenu className={`absolute left-0 top-full z-50 mt-1.5 max-h-[70vh] min-w-[200px] origin-top overflow-y-auto ${PANEL_CLASS}`} radius="row">
           {group.folder ? (
             <FolderMenuPanel
               folder={groupFolder}
@@ -259,6 +259,16 @@ export default function TopBar({
   const navRef = useRef(null);
   const darkMode = theme !== "light";
   const nextThemeLabel = darkMode ? "Light mode" : "Dark mode";
+
+  // Fixed groups first, then a live "My Boxes" group listing the user's
+  // custom boxes (in live order). NavDropdown drops ids missing from the
+  // live list, so the whole group vanishes when there are no custom boxes.
+  const navGroups = useMemo(() => {
+    const customIds = folders.filter((f) => f.custom).map((f) => f.id);
+    return customIds.length
+      ? [...DROPDOWN_GROUPS, { label: "My Boxes", items: customIds }]
+      : DROPDOWN_GROUPS;
+  }, [folders]);
 
   useEffect(() => {
     if (openGroup === null) return undefined;
@@ -306,7 +316,7 @@ export default function TopBar({
 
             <span className="mx-1 h-4 w-px shrink-0 bg-white/12" aria-hidden="true" />
 
-            {DROPDOWN_GROUPS.map((group) => (
+            {navGroups.map((group) => (
               <NavDropdown
                 key={group.label}
                 group={group}

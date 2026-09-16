@@ -536,7 +536,10 @@ export function countByDisplayFolder(skills, { search = "", hideEmpty = false } 
     count: searched.filter((skill) => matchesFolder(skill, folder.id)).length,
   }));
 
-  return hideEmpty ? rows.filter((row) => row.count > 0) : rows;
+  // hideEmpty trims lanes the user's skills never touched, but a box they
+  // deliberately created stays visible even at 0 — the creation form promises
+  // it "stays empty until you pin skills into it".
+  return hideEmpty ? rows.filter((row) => row.count > 0 || row.custom) : rows;
 }
 
 export function countBySubfolder(skills, folderId) {
