@@ -1,0 +1,338 @@
+/* ───────────────────────────────────────────────────────────────────
+   Folder Redesign Lab — scoped styles (prefix .fld-*)
+   Isolated from the live .folder-shape. Keeps the metal colors + brushed
+   texture + tech-grid finish; only the folder shape/structure is new.
+   ─────────────────────────────────────────────────────────────────── */
+
+.fld-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 10px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  outline: none;
+  color: inherit;
+}
+.fld-card-lg {
+  gap: 22px;
+}
+.fld-card:focus-visible .fld-front {
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.55),
+    0 0 0 2px rgba(186, 230, 253, 0.7),
+    0 18px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Folder bounding box ── */
+.fld {
+  position: relative;
+  perspective: 720px;
+  transition: transform 0.42s cubic-bezier(0.2, 0.8, 0.2, 1);
+  isolation: isolate;
+}
+.fld-md {
+  width: 172px;
+  height: 134px;
+}
+.fld-lg {
+  width: 312px;
+  height: 244px;
+}
+
+.fld-card:hover .fld {
+  transform: translateY(-7px);
+}
+
+/* ── Ambient color glow ── */
+.fld-glow {
+  position: absolute;
+  inset: -14%;
+  z-index: 0;
+  border-radius: 42px;
+  background: var(--fld-glow, rgba(59, 130, 246, 0.3));
+  filter: blur(26px);
+  opacity: 0.28;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.fld-card:hover .fld-glow {
+  opacity: 0.6;
+  transform: scale(1.06);
+}
+
+/* ── Tab (upper-left), classic macOS slope ── */
+.fld-tab {
+  position: absolute;
+  top: 0;
+  left: 7%;
+  width: 46%;
+  height: 25%;
+  z-index: 1;
+  border-radius: 13px 16px 3px 0;
+  clip-path: polygon(0 0, 68% 0, 100% 100%, 0 100%);
+  background: linear-gradient(
+    150deg,
+    var(--fld-tab-top, #bdeaff) 0%,
+    var(--fld-tab-mid, #397eb4) 56%,
+    var(--fld-tab-deep, #12395e) 100%
+  );
+  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* ── Back wall (shows a thin lip above the front) ── */
+.fld-back {
+  position: absolute;
+  top: 14%;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  border-radius: 20px;
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--fld-metal-mid, #2c6fa5) 62%, var(--fld-metal-top, #9bdcff)) 0%,
+    var(--fld-metal-deep, #0b2748) 100%
+  );
+  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.28);
+}
+
+/* ── File / paper inside (the kept tech-grid). Peeks out on hover. ── */
+.fld-paper {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  top: 8%;
+  height: 72%;
+  z-index: 2;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  transform: translateY(18%);
+  transition: transform 0.42s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.34);
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.22) 1px, transparent 1px) 0 0 / 13px 13px,
+    linear-gradient(rgba(255, 255, 255, 0.18) 1px, transparent 1px) 0 0 / 13px 13px,
+    radial-gradient(circle at 50% 36%, rgba(255, 255, 255, 0.24), transparent 62%),
+    linear-gradient(
+      165deg,
+      color-mix(in srgb, var(--fld-metal-top, #9bdcff) 82%, #ffffff) 0%,
+      var(--fld-metal-mid, #2c6fa5) 100%
+    );
+}
+.fld-card:hover .fld-paper {
+  transform: translateY(-13%);
+}
+
+/* ── Front flap (carries brushed finish + emblem) ── */
+.fld-front {
+  position: absolute;
+  top: 19%;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  overflow: hidden;
+  border-radius: 20px;
+  border: 1px solid var(--fld-rim, rgba(186, 230, 253, 0.48));
+  transform-origin: 50% 100%;
+  transform: rotateX(0deg);
+  transition: transform 0.42s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease;
+  background: linear-gradient(
+    160deg,
+    var(--fld-metal-top, #9bdcff) 0%,
+    var(--fld-metal-mid, #2c6fa5) 50%,
+    var(--fld-metal-deep, #0b2748) 100%
+  );
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.42),
+    inset 0 -22px 36px rgba(2, 8, 23, 0.4),
+    0 18px 30px rgba(0, 0, 0, 0.4);
+}
+.fld-card:hover .fld-front,
+.fld.is-opening .fld-front {
+  transform: rotateX(-15deg);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -22px 36px rgba(2, 8, 23, 0.36),
+    0 24px 38px rgba(0, 0, 0, 0.46);
+}
+
+/* brushed metal texture (kept from current finish) */
+.fld-brush {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: 19px;
+  mix-blend-mode: screen;
+  opacity: 0.18;
+  background:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.1) 0 1px, transparent 1px 5px),
+    radial-gradient(circle at 28% 16%, rgba(255, 255, 255, 0.2), transparent 30%),
+    radial-gradient(circle at 78% 76%, rgba(255, 255, 255, 0.08), transparent 36%);
+}
+
+/* diagonal sheen */
+.fld-shine {
+  position: absolute;
+  inset: 0 32% 42% 0;
+  z-index: 2;
+  pointer-events: none;
+  border-radius: 19px;
+  opacity: 0.22;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.45), transparent 62%);
+}
+
+/* ── 3D color-matched emblem ── */
+.fld-emblem {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateZ(0);
+}
+.fld-emblem svg {
+  width: 42%;
+  height: 42%;
+  color: var(--fld-metal-top, #cfe8ff);
+  filter:
+    drop-shadow(0 1px 0 var(--fld-highlight, rgba(255, 255, 255, 0.4)))
+    drop-shadow(0 2px 1px var(--fld-metal-deep, #0b2748))
+    drop-shadow(0 5px 7px rgba(0, 0, 0, 0.55));
+}
+
+/* ── Pixelated open transition ── */
+.fld-pixels {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  display: grid;
+  grid-template-columns: repeat(16, 1fr);
+  grid-template-rows: repeat(13, 1fr);
+  border-radius: 20px;
+  overflow: hidden;
+  pointer-events: none;
+}
+.fld-pixel {
+  transform: scale(0);
+  transform-origin: center;
+  background: var(--fld-metal-mid, #2c6fa5);
+  animation: fld-pixel-pop 300ms steps(1, end) forwards;
+  animation-delay: var(--d, 0ms);
+}
+.fld-pixel:nth-child(2n) {
+  background: var(--fld-metal-top, #9bdcff);
+}
+.fld-pixel:nth-child(3n) {
+  background: var(--fld-metal-deep, #0b2748);
+}
+@keyframes fld-pixel-pop {
+  to {
+    transform: scale(1.04);
+  }
+}
+
+/* ── Folder meta (label + count) ── */
+.fld-meta {
+  text-align: center;
+  max-width: 200px;
+}
+.fld-label {
+  display: block;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.01em;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+.fld-card-lg .fld-label {
+  font-size: 18px;
+}
+.fld-count {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ── Demo "next screen" ── */
+.fld-next {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(4, 8, 18, 0.72);
+  backdrop-filter: blur(6px);
+  animation: fld-next-in 320ms ease both;
+}
+@keyframes fld-next-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.fld-next-card {
+  display: flex;
+  max-width: 540px;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 28px;
+  padding: 44px 40px;
+  text-align: center;
+}
+.fld-next-emblem {
+  display: grid;
+  place-items: center;
+  width: 92px;
+  height: 92px;
+  margin-bottom: 16px;
+  border-radius: 24px;
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--fld-metal-mid, #2c6fa5) 60%, var(--fld-metal-deep, #0b2748)),
+    var(--fld-metal-deep, #0b2748)
+  );
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 12px 26px rgba(0, 0, 0, 0.4);
+}
+.fld-next-emblem svg {
+  width: 52px;
+  height: 52px;
+  color: var(--fld-metal-top, #cfe8ff);
+  filter: drop-shadow(0 2px 2px var(--fld-metal-deep, #0b2748)) drop-shadow(0 6px 10px rgba(0, 0, 0, 0.5));
+}
+.fld-next-back {
+  margin-top: 24px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.fld-next-back:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fld,
+  .fld-front,
+  .fld-paper,
+  .fld-glow {
+    transition: none;
+  }
+}

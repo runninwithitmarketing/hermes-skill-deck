@@ -1,0 +1,13 @@
+{
+  "name": "hermes-skill-deck-app",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "app:dev": "tauri dev",
+    "app:build": "tauri build"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2"
+  },
+  "type": "module"
+}

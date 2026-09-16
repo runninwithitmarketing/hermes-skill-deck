@@ -1,0 +1,55 @@
+name: Release
+
+# Builds unsigned macOS .app/.dmg bundles and attaches them to a GitHub Release.
+# Trigger by pushing a tag (v0.1.0) or running manually from the Actions tab.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-latest
+            target: aarch64-apple-darwin
+          - platform: macos-latest
+            target: x86_64-apple-darwin
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install root tooling (Tauri CLI)
+        run: npm ci
+
+      - name: Install frontend deps
+        run: npm --prefix frontend ci
+
+      - name: Build frontend
+        run: npm --prefix frontend run build
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: Hermes Skill Deck ${{ github.ref_name }}
+          releaseBody: >
+            Unsigned macOS build. On first launch, right-click the app and choose
+            **Open** (or run `xattr -cr "/Applications/Hermes Skill Deck.app"`)
+            to bypass Gatekeeper.
+          releaseDraft: false
+          prerelease: false
+          args: --target ${{ matrix.target }}

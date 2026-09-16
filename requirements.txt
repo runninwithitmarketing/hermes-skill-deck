@@ -1,0 +1,6 @@
+fastapi>=0.115,<1.0
+uvicorn[standard]>=0.30,<1.0
+PyYAML>=6.0,<7.0
+anthropic>=0.40
+openai>=1.40
+python-dotenv>=1.0

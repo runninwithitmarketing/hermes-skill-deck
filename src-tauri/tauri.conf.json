@@ -1,0 +1,35 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Hermes Skill Deck",
+  "version": "0.1.0",
+  "identifier": "com.hermes.skilldeck",
+  "build": {
+    "frontendDist": "../frontend/dist",
+    "devUrl": "http://127.0.0.1:5173",
+    "beforeDevCommand": "",
+    "beforeBuildCommand": "node stage-backend.js"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Hermes Skill Deck",
+        "width": 1440,
+        "height": 900,
+        "minWidth":  1024,
+        "minHeight": 640,
+        "visible": false,
+        "resizable": true,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["app", "dmg"],
+    "category": "DeveloperTool",
+    "resources": ["backend-stage/"]
+  }
+}
