@@ -53,7 +53,7 @@ function NavEditPanel({ folders, pinned, onToggle, onReset }) {
           Check the boxes you want in the top bar — they replace the default menus.
         </p>
       </div>
-      <div className="max-h-[52vh] overflow-y-auto">
+      <div className="max-h-[52vh] overflow-y-auto scroll-fade">
         {folders.map((f) => {
           const checked = pinned?.includes(f.id);
           return (
@@ -125,7 +125,7 @@ function SubfolderItem({ folder, sub, skills, onOpenSkill, onNavigate, onClose }
 
       {flyoutOpen && (
         <div className="absolute left-full top-0 z-50 pl-1.5">
-          <MagneticMenu className={`relative max-h-[70vh] min-w-[220px] overflow-y-auto ${PANEL_CLASS}`} radius="row">
+          <MagneticMenu className={`relative max-h-[70vh] min-w-[220px] overflow-y-auto scroll-fade ${PANEL_CLASS}`} radius="row">
             {subSkills.map((skill) => (
               <button
                 type="button"
@@ -278,7 +278,7 @@ function NavDropdown({ group, folders, open, onOpen, onClose, onNavigate, skills
       </button>
 
       {open && (
-        <MagneticMenu className={`absolute left-0 top-full z-50 mt-1.5 max-h-[70vh] min-w-[200px] origin-top overflow-y-auto ${PANEL_CLASS}`} radius="row">
+        <MagneticMenu className={`absolute left-0 top-full z-50 mt-1.5 min-w-[200px] origin-top ${PANEL_CLASS}`} radius="row">
           {group.folder ? (
             <FolderMenuPanel
               folder={groupFolder}
