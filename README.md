@@ -17,6 +17,7 @@ Everything runs locally: the dashboard is a native webview pointed at a FastAPI 
 
 - **Desktop-style dashboard** — folders, drag-to-reorder, favorites, profiles, search
 - **Custom skill boxes** with category rules; skills can be filed into boxes
+- **Customizable top menu bar** — pick your own menus on first launch or anytime with the `+`; menus are live views of your synced skills
 - **Skill viewer** with markdown rendering, related-skill chips, and quick actions
 - **Terminal Mode** — an AI agent (GLM / Claude / OpenAI / DeepSeek) that can search, create, and delete skills in natural language
 - **Read-only browsing** of your `~/.hermes` skills; deletes require agent confirmation
@@ -98,6 +99,29 @@ agent to confirm with you first.
 - `~/.hermes/profiles/*/skills/`
 
 It skips `.archive` directories, parses YAML frontmatter, writes to `skills.db`, updates existing rows by `file_path`, and removes stale rows for files that no longer exist. The FastAPI server runs sync on startup, and the dashboard `Sync Now` action calls `POST /api/sync`.
+
+## The Top Bar & Your Skill Boxes
+
+Everything on screen is built from **your** skills — nothing ships with the app:
+
+- **First launch** shows a one-time setup card: **Start with the default menus**
+  or **Sync my own menus**. The second option opens a checklist built live from
+  the skill boxes your synced skills actually landed in (empty lanes are hidden,
+  so a different skill set produces a different checklist). The card never
+  appears again after choosing.
+- **The `+` at the end of the top bar** reopens that checklist anytime. Check
+  boxes and they become your personal top-bar menus — exactly those boxes, in
+  the order you checked. **Use default menus** restores the standard layout.
+- **Menus are live views, not snapshots.** Skills sync from `~/.hermes` on
+  every launch (and on demand via `Sync Now`), auto-file into boxes by
+  category rules, and the menus reflect whatever synced — install a new skill
+  and it appears in its box's menu automatically.
+- **Menus cascade** Mac-style: top-level menu → subcategories → individual
+  skills, each level revealed by hovering the row with a chevron.
+- **Custom skill boxes** you create (the dashed **New Skill Box** tile) can
+  carry a category rule so future syncs auto-file matching skills into them,
+  and show up in a live **My Boxes** menu until you pin a custom layout.
+  Right-click any folder tile to rename, recolor, edit its rule, or delete it.
 
 ## Desktop App (Tauri)
 
