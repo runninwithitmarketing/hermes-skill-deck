@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
+    "tauri": "tauri",
     "app:dev": "tauri dev",
     "app:build": "tauri build"
   },
