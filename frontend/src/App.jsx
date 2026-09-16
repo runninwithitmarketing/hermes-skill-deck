@@ -608,8 +608,9 @@ export default function App() {
           <div className="w-full max-w-md rounded-[2rem] border border-white/12 bg-slate-950/95 p-7 text-center shadow-[0_24px_70px_rgba(0,0,0,0.6)]">
             <h2 className="font-heading text-xl font-bold text-white">Set up your top bar</h2>
             <p className="mt-2 text-sm leading-6 text-white/60">
-              Choose how the menu bar at the top of the app looks. You can change it anytime
-              with the <span className="font-semibold text-white/85">+</span> at the end of the bar.
+              Your skills sync from your machine automatically — the menus below are built from
+              them. You can change your picks anytime with the{" "}
+              <span className="font-semibold text-white/85">+</span> at the end of the bar.
             </p>
             <div className="mt-6 flex flex-col gap-2.5">
               <button
@@ -624,7 +625,7 @@ export default function App() {
                 onClick={() => finishNavSetup(true)}
                 className="rounded-2xl border border-sky-300/30 bg-sky-400/18 px-5 py-3 font-ui text-sm font-bold text-sky-100 transition hover:bg-sky-400/28"
               >
-                Pick my own menus
+                Sync my own menus
               </button>
             </div>
           </div>
