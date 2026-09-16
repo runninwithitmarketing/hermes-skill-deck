@@ -65,7 +65,7 @@ export default function CategoryView({
   };
 
   return (
-    <main className="detail-stage relative z-10 px-5 pb-32 pt-20 sm:px-8 lg:px-10">
+    <main className="detail-stage relative z-10 px-5 pb-48 pt-20 sm:px-8 lg:px-10">
       <div className="mb-5 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
         <div className="flex min-w-0 items-center gap-4">
           <button

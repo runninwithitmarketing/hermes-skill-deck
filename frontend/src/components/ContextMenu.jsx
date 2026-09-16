@@ -21,9 +21,12 @@ export default function ContextMenu({
   const [category, setCategory] = useState(currentCategory);
   const entries = Object.entries(materials);
 
-  // Close on outside click
+  // Close on outside click. Left-button only: the right-click that opens
+  // this menu can arrive with (or be followed by) a non-left mousedown in
+  // WKWebView, which would otherwise close the menu the instant it opens.
   useEffect(() => {
     function handleClick(e) {
+      if (e.button !== 0) return;
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         onClose();
       }

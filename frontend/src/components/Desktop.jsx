@@ -236,7 +236,7 @@ export default function Desktop({
   );
 
   return (
-    <main className="relative z-10 px-5 pb-32 pt-24 sm:px-8 lg:px-12">
+    <main className="relative z-10 px-5 pb-48 pt-24 sm:px-8 lg:px-12">
       <div className={`grid gap-8 xl:grid-cols-[minmax(0,1fr)_390px] ${terminalActive ? "folders-rail-host" : ""}`}>
         <section className="min-w-0">
           <div className="text-center">

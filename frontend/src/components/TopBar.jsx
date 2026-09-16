@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, ChevronRight, LayoutGrid, Moon, RefreshCw, Sun } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, LayoutGrid, Moon, Plus, RefreshCw, Sun } from "lucide-react";
 import { displayFolders, filterDisplaySkills } from "../lib/displayTaxonomy";
 import HermesLogo from "./HermesLogo";
 import MagneticMenu from "./MagneticMenu";
@@ -26,6 +26,68 @@ const DROPDOWN_GROUPS = [
 
 const PANEL_CLASS =
   "origin-top-left animate-[dropdown-in_160ms_ease-out] rounded-2xl border border-white/12 bg-slate-900 p-2 shadow-[0_20px_60px_rgba(0,0,0,0.65),0_0_0_1px_rgba(255,255,255,0.06)_inset]";
+
+// ── User-customized top nav ───────────────────────────────────────────────────
+// When present, "nav-pinned" (localStorage) is a list of folder ids the user
+// checked in the "+" editor — those become their personal top-bar menus,
+// replacing the default groups. Null/absent = the shipped default nav.
+const NAV_PINNED_KEY = "nav-pinned";
+
+function readNavPinned() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(NAV_PINNED_KEY) || "null");
+    return Array.isArray(parsed) && parsed.length ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+// The "+" editor panel: every live folder with a checkbox. Checked boxes are
+// the user's own top-bar menus, in the order they were checked.
+function NavEditPanel({ folders, pinned, onToggle, onReset }) {
+  return (
+    <div className="w-72">
+      <div className="px-2.5 pb-2 pt-1">
+        <div className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/36">Your top menus</div>
+        <p className="mt-1 text-[11px] leading-4 text-white/45">
+          Check the boxes you want in the top bar — they replace the default menus.
+        </p>
+      </div>
+      <div className="max-h-[52vh] overflow-y-auto">
+        {folders.map((f) => {
+          const checked = pinned?.includes(f.id);
+          return (
+            <button
+              key={f.id}
+              type="button"
+              data-mag
+              onClick={() => onToggle(f.id)}
+              className="relative z-10 flex w-full items-center gap-2.5 rounded-xl px-2.5 py-1.5 text-left text-sm font-semibold text-white/75 transition hover:bg-white/10 hover:text-white"
+            >
+              <span
+                className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
+                  checked ? "border-sky-300/70 bg-sky-400/25" : "border-white/25 bg-white/5"
+                }`}
+              >
+                {checked && <Check className="h-3 w-3 text-sky-100" />}
+              </span>
+              <span className="truncate">{f.label}</span>
+              <span className="ml-auto shrink-0 text-xs font-medium text-white/35">{f.count}</span>
+            </button>
+          );
+        })}
+      </div>
+      <button
+        type="button"
+        data-mag
+        onClick={onReset}
+        className="relative z-10 mt-1 w-full rounded-xl px-2.5 py-1.5 text-left text-xs font-semibold text-amber-200/75 transition hover:bg-white/10 hover:text-amber-100"
+      >
+        Use default menus
+      </button>
+    </div>
+  );
+}
 
 function HermesIcon() {
   return <HermesLogo iconClassName="h-7 w-10" />;
@@ -259,16 +321,39 @@ export default function TopBar({
   const navRef = useRef(null);
   const darkMode = theme !== "light";
   const nextThemeLabel = darkMode ? "Light mode" : "Dark mode";
+  // The user's own menu picks (folder ids). Null = shipped default nav.
+  const [navPinned, setNavPinned] = useState(readNavPinned);
 
-  // Fixed groups first, then a live "My Boxes" group listing the user's
-  // custom boxes (in live order). NavDropdown drops ids missing from the
-  // live list, so the whole group vanishes when there are no custom boxes.
+  const togglePinned = (id) => {
+    setNavPinned((prev) => {
+      const current = prev ?? [];
+      const next = current.includes(id) ? current.filter((x) => x !== id) : [...current, id];
+      if (next.length) localStorage.setItem(NAV_PINNED_KEY, JSON.stringify(next));
+      else localStorage.removeItem(NAV_PINNED_KEY);
+      return next.length ? next : null;
+    });
+  };
+
+  const resetPinned = () => {
+    localStorage.removeItem(NAV_PINNED_KEY);
+    setNavPinned(null);
+  };
+
+  // Custom picks win: each pinned folder becomes its own top-level menu.
+  // Otherwise the fixed groups, plus a live "My Boxes" group listing custom
+  // boxes. NavDropdown drops ids missing from the live list either way.
   const navGroups = useMemo(() => {
+    if (navPinned) {
+      return navPinned
+        .map((id) => folders.find((f) => f.id === id))
+        .filter(Boolean)
+        .map((f) => ({ label: f.label, folder: f.id }));
+    }
     const customIds = folders.filter((f) => f.custom).map((f) => f.id);
     return customIds.length
       ? [...DROPDOWN_GROUPS, { label: "My Boxes", items: customIds }]
       : DROPDOWN_GROUPS;
-  }, [folders]);
+  }, [folders, navPinned]);
 
   useEffect(() => {
     if (openGroup === null) return undefined;
@@ -302,7 +387,14 @@ export default function TopBar({
           </span>
         </button>
 
-        <nav ref={navRef} className="hidden shrink-0 whitespace-nowrap min-[1360px]:block">
+        {/* Menu strip shows at EVERY window width (the app allows resizing to
+            1024). On narrow windows it scrolls horizontally instead of
+            vanishing — hiding it below 1360px left users with no menus. */}
+        <nav
+          ref={navRef}
+          className="min-w-0 shrink overflow-x-auto whitespace-nowrap"
+          style={{ scrollbarWidth: "none" }}
+        >
           <MagneticMenu className="relative flex items-center gap-0.5" radius="pill">
             <button
               type="button"
@@ -318,7 +410,7 @@ export default function TopBar({
 
             {navGroups.map((group) => (
               <NavDropdown
-                key={group.label}
+                key={group.folder || group.label}
                 group={group}
                 folders={folders}
                 open={openGroup === group.label}
@@ -333,6 +425,28 @@ export default function TopBar({
                 onOpenSkill={onOpenSkill}
               />
             ))}
+
+            {/* "+" opens the nav editor: users pick their own top-bar menus. */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setOpenGroup((current) => (current === "__edit__" ? null : "__edit__"))}
+                aria-haspopup="true"
+                aria-expanded={openGroup === "__edit__"}
+                aria-label="Customize your top menus"
+                title="Customize your top menus"
+                data-mag
+                className={`relative z-10 inline-flex shrink-0 items-center justify-center rounded-full px-2 py-1.5 text-white/70 transition hover:text-white ${openGroup === "__edit__" ? "text-white" : ""}`}
+              >
+                <Plus className="h-3.5 w-3.5" />
+              </button>
+
+              {openGroup === "__edit__" && (
+                <div className={`absolute left-0 top-full z-50 mt-1.5 origin-top ${PANEL_CLASS}`}>
+                  <NavEditPanel folders={folders} pinned={navPinned} onToggle={togglePinned} onReset={resetPinned} />
+                </div>
+              )}
+            </div>
           </MagneticMenu>
         </nav>
 
