@@ -159,7 +159,7 @@ export default function Dock({ onAction, onProfile, onTerminal, onReorderProfile
   };
 
   return (
-    <nav className="mac-dock fixed bottom-4 left-1/2 z-40 hidden max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-[2rem] border border-white/15 bg-black/40 px-3 py-2.5 shadow-glass backdrop-blur-2xl xl:block">
+    <nav className="mac-dock fixed bottom-4 left-1/2 z-40 max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-[2rem] border border-white/15 bg-black/40 px-3 py-2.5 shadow-glass backdrop-blur-2xl">
       <div className="flex items-center gap-2.5">
         {fixedItems.map((item) => {
           const Icon = item.icon;

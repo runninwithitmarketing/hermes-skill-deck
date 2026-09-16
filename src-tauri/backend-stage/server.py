@@ -309,8 +309,10 @@ def spa_fallback(full_path: str):
     if not PROD or not INDEX_HTML.exists():
         raise HTTPException(status_code=404, detail="frontend build not found")
     # A real file in the build (favicon, vite.svg, etc.)? Serve it directly.
-    candidate = FRONTEND_DIST / full_path
-    if full_path and candidate.is_file():
+    # Resolve and confine to FRONTEND_DIST: the raw path may contain ../ or
+    # absolute segments that would otherwise escape the bundle (path traversal).
+    candidate = (FRONTEND_DIST / full_path).resolve()
+    if full_path and candidate.is_file() and candidate.is_relative_to(FRONTEND_DIST.resolve()):
         return FileResponse(candidate)
     # Otherwise return index.html so the React app can handle the route.
     return FileResponse(INDEX_HTML)

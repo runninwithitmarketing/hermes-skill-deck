@@ -109,6 +109,13 @@ def delete_skill_by_path(file_path: str) -> dict[str, Any]:
         raise SkillOpError("refusing to delete a skills root")
 
     shutil.rmtree(skill_dir)
+    # Drop the category folder too if this was its last skill (rmdir only
+    # removes empty dirs, and skills roots are named "skills" so they never match).
+    if skill_dir.parent.name != "skills":
+        try:
+            skill_dir.parent.rmdir()
+        except OSError:
+            pass  # category still has other skills
     sync(verbose=False)
     return {"status": "ok", "deleted": str(skill_dir)}
 

@@ -9,26 +9,20 @@ import SearchBar from "./SearchBar";
 // (its dropdown lists "All <folder>" plus that folder's subfolders directly).
 // Menus behave like Mac menus: top-line -> folders -> subfolders -> skills,
 // each level revealed by hovering the arrow on the row to its left.
+// Items reference folders by stable id: the live folder list (passed in as
+// `folders`, with user renames applied and empty boxes hidden) decides the
+// displayed label and whether the item shows at all — so a renamed box keeps
+// its menu entry under the new name, and an empty one drops out of the nav.
 const DROPDOWN_GROUPS = [
-  { label: "Marketing", items: ["SEO", "Agency", "Writing"] },
-  { label: "Creative", folder: "Creative" },
-  { label: "YouTube", folder: "YouTube" },
-  { label: "Notion", folder: "Notion" },
-  { label: "Spotify", folder: "Spotify & Music" },
-  { label: "Dev Tools", items: ["Coding", "Hermes Ops", "Automation & Integrations"] },
-  { label: "Data", items: ["Stock & Markets", "News & Feeds", "Research"] },
-  { label: "Ops", items: ["Data & ML", "Skill Bundles", "Personal & Utilities"] },
+  { label: "Marketing", items: ["seo", "agency", "writing"] },
+  { label: "Creative", folder: "creative" },
+  { label: "YouTube", folder: "youtube" },
+  { label: "Notion", folder: "notion" },
+  { label: "Spotify", folder: "spotify-music" },
+  { label: "Dev Tools", items: ["coding", "hermes-ops", "automation-integrations"] },
+  { label: "Data", items: ["stock-markets", "news-feeds", "research"] },
+  { label: "Ops", items: ["data-ml", "skill-bundles", "personal-utilities"] },
 ];
-
-const folderByLabel = new Map(displayFolders.map((folder) => [folder.label, folder]));
-
-function subfoldersFor(label) {
-  return folderByLabel.get(label)?.subfolders ?? [];
-}
-
-function folderIdForLabel(label) {
-  return folderByLabel.get(label)?.id ?? null;
-}
 
 const PANEL_CLASS =
   "origin-top-left animate-[dropdown-in_160ms_ease-out] rounded-2xl border border-white/12 bg-slate-900 p-2 shadow-[0_20px_60px_rgba(0,0,0,0.65),0_0_0_1px_rgba(255,255,255,0.06)_inset]";
@@ -39,12 +33,11 @@ function HermesIcon() {
 
 // Deepest flyout level: the actual skills inside one subfolder. Clicking a
 // skill opens it. Renders nothing when the subfolder has no matched skills.
-function SubfolderItem({ folderLabel, sub, skills, onOpenSkill, onNavigate, onClose }) {
+function SubfolderItem({ folder, sub, skills, onOpenSkill, onNavigate, onClose }) {
   const [flyoutOpen, setFlyoutOpen] = useState(false);
-  const folderId = folderIdForLabel(folderLabel);
   const subSkills = useMemo(
-    () => filterDisplaySkills(skills, { folderId, subfolderId: sub.id }),
-    [skills, folderId, sub.id],
+    () => filterDisplaySkills(skills, { folderId: folder.id, subfolderId: sub.id }),
+    [skills, folder.id, sub.id],
   );
 
   if (!subSkills.length) return null;
@@ -58,7 +51,7 @@ function SubfolderItem({ folderLabel, sub, skills, onOpenSkill, onNavigate, onCl
       <button
         type="button"
         onClick={() => {
-          onNavigate(folderLabel, sub.id);
+          onNavigate(folder.id, sub.id);
           onClose();
         }}
         data-mag
@@ -94,9 +87,9 @@ function SubfolderItem({ folderLabel, sub, skills, onOpenSkill, onNavigate, onCl
 
 // A folder row inside a group menu. Hovering reveals its subfolders, each of
 // which in turn reveals its skills (SubfolderItem). Clicking opens the folder.
-function NavMenuItem({ label, skills, onOpenSkill, onNavigate, onClose }) {
+function NavMenuItem({ folder, skills, onOpenSkill, onNavigate, onClose }) {
   const [flyoutOpen, setFlyoutOpen] = useState(false);
-  const subfolders = subfoldersFor(label);
+  const subfolders = folder.subfolders ?? [];
   const hasSubfolders = subfolders.length > 0;
 
   return (
@@ -108,13 +101,13 @@ function NavMenuItem({ label, skills, onOpenSkill, onNavigate, onClose }) {
       <button
         type="button"
         onClick={() => {
-          onNavigate(label);
+          onNavigate(folder.id);
           onClose();
         }}
         data-mag
         className={`relative z-10 flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left text-sm font-ui font-semibold text-white/78 transition hover:text-white ${flyoutOpen && hasSubfolders ? "text-white" : ""}`}
       >
-        <span>{label}</span>
+        <span>{folder.label}</span>
         {hasSubfolders && <ChevronRight className="h-3.5 w-3.5 shrink-0 text-white/45" />}
       </button>
 
@@ -124,7 +117,7 @@ function NavMenuItem({ label, skills, onOpenSkill, onNavigate, onClose }) {
             {subfolders.map((sub) => (
               <SubfolderItem
                 key={sub.id}
-                folderLabel={label}
+                folder={folder}
                 sub={sub}
                 skills={skills}
                 onOpenSkill={onOpenSkill}
@@ -141,21 +134,21 @@ function NavMenuItem({ label, skills, onOpenSkill, onNavigate, onClose }) {
 
 // Dropdown body for a folder that owns its own top-line menu: an "All <folder>"
 // shortcut, then each subfolder as a row that reveals its skills on hover.
-function FolderMenuPanel({ folderLabel, skills, onOpenSkill, onNavigate, onClose }) {
-  const subfolders = subfoldersFor(folderLabel);
+function FolderMenuPanel({ folder, skills, onOpenSkill, onNavigate, onClose }) {
+  const subfolders = folder.subfolders ?? [];
 
   return (
     <>
       <button
         type="button"
         onClick={() => {
-          onNavigate(folderLabel);
+          onNavigate(folder.id);
           onClose();
         }}
         data-mag
         className="relative z-10 block w-full rounded-xl px-3 py-2 text-left text-sm font-ui font-semibold text-white transition"
       >
-        All {folderLabel}
+        All {folder.label}
       </button>
 
       {subfolders.length > 0 && <div className="mx-2 my-1.5 border-t border-white/10" />}
@@ -163,7 +156,7 @@ function FolderMenuPanel({ folderLabel, skills, onOpenSkill, onNavigate, onClose
       {subfolders.map((sub) => (
         <SubfolderItem
           key={sub.id}
-          folderLabel={folderLabel}
+          folder={folder}
           sub={sub}
           skills={skills}
           onOpenSkill={onOpenSkill}
@@ -175,7 +168,7 @@ function FolderMenuPanel({ folderLabel, skills, onOpenSkill, onNavigate, onClose
   );
 }
 
-function NavDropdown({ group, open, onOpen, onClose, onNavigate, skills, onOpenSkill }) {
+function NavDropdown({ group, folders, open, onOpen, onClose, onNavigate, skills, onOpenSkill }) {
   const closeTimer = useRef(null);
 
   function cancelClose() {
@@ -191,6 +184,15 @@ function NavDropdown({ group, open, onOpen, onClose, onNavigate, skills, onOpenS
   }
 
   useEffect(() => cancelClose, []);
+
+  // Resolve the group's folder refs against the live list. An id missing from
+  // `folders` (hidden/empty, or removed) drops out of the nav — but this early
+  // return must stay AFTER the useEffect so the hook order never varies.
+  const groupFolder = group.folder ? folders.find((f) => f.id === group.folder) : null;
+  const groupItems = group.items
+    ? group.items.map((id) => folders.find((f) => f.id === id)).filter(Boolean)
+    : [];
+  if (group.folder ? !groupFolder : groupItems.length === 0) return null;
 
   return (
     <div
@@ -217,17 +219,17 @@ function NavDropdown({ group, open, onOpen, onClose, onNavigate, skills, onOpenS
         <MagneticMenu className={`absolute left-0 top-full z-50 mt-1.5 min-w-[200px] origin-top ${PANEL_CLASS}`} radius="row">
           {group.folder ? (
             <FolderMenuPanel
-              folderLabel={group.folder}
+              folder={groupFolder}
               skills={skills}
               onOpenSkill={onOpenSkill}
               onNavigate={onNavigate}
               onClose={onClose}
             />
           ) : (
-            group.items.map((item) => (
+            groupItems.map((folder) => (
               <NavMenuItem
-                key={item}
-                label={item}
+                key={folder.id}
+                folder={folder}
                 skills={skills}
                 onOpenSkill={onOpenSkill}
                 onNavigate={onNavigate}
@@ -251,6 +253,7 @@ export default function TopBar({
   onSync,
   theme = "dark",
   onToggleTheme,
+  folders = displayFolders,
 }) {
   const [openGroup, setOpenGroup] = useState(null);
   const navRef = useRef(null);
@@ -307,6 +310,7 @@ export default function TopBar({
               <NavDropdown
                 key={group.label}
                 group={group}
+                folders={folders}
                 open={openGroup === group.label}
                 onOpen={() => setOpenGroup(group.label)}
                 // A menu's delayed close must only clear itself. Sliding the

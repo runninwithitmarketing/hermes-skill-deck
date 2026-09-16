@@ -887,12 +887,6 @@
       will-change: auto;
     }
   }
-
-  @media (max-height: 850px) {
-    .mac-dock {
-      display: none;
-    }
-  }
 }
 
 @layer utilities {

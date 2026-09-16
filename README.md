@@ -1,6 +1,6 @@
 # Hermes Skill Deck
 
-Hermes Skill Deck is a local dashboard for browsing Hermes Agent skills from your filesystem. It syncs `SKILL.md` files from `~/.hermes/skills/` and `~/.hermes/profiles/*/skills/` into SQLite, then serves them through a FastAPI backend and a React/Vite/Tailwind frontend. A built-in **Terminal Mode** adds an AI agent (Claude / OpenAI / DeepSeek) that searches your skills and can create or delete them in natural language.
+Hermes Skill Deck is a local dashboard for browsing Hermes Agent skills from your filesystem. It syncs `SKILL.md` files from `~/.hermes/skills/` and `~/.hermes/profiles/*/skills/` into SQLite, then serves them through a FastAPI backend and a React/Vite/Tailwind frontend. A built-in **Terminal Mode** adds an AI agent (GLM / Claude / OpenAI / DeepSeek) that searches your skills and can create or delete them in natural language.
 
 ## Download
 
@@ -18,7 +18,7 @@ Everything runs locally: the dashboard is a native webview pointed at a FastAPI 
 - **Desktop-style dashboard** — folders, drag-to-reorder, favorites, profiles, search
 - **Custom skill boxes** with category rules; skills can be filed into boxes
 - **Skill viewer** with markdown rendering, related-skill chips, and quick actions
-- **Terminal Mode** — an AI agent (Claude / OpenAI / DeepSeek) that can search, create, and delete skills in natural language
+- **Terminal Mode** — an AI agent (GLM / Claude / OpenAI / DeepSeek) that can search, create, and delete skills in natural language
 - **Read-only browsing** of your `~/.hermes` skills; deletes require agent confirmation
 
 ## Requirements
@@ -64,29 +64,31 @@ npm run build
 ## Terminal AI Agent
 
 Open **Terminal Mode** from the Dock (or press `` Ctrl+` ``) and type a question in
-plain English. A Claude / OpenAI / DeepSeek model answers, searches your skills, and
-can **create** or **delete** skills via tool calls. The built-in commands (`help`,
+plain English. A GLM / Claude / OpenAI / DeepSeek model answers, searches your skills,
+and can **create** or **delete** skills via tool calls. The built-in commands (`help`,
 `ls`, `search`, `open`, …) still work; anything that isn't a command is sent to the AI.
 
 The model runs server-side through each provider's native SDK — the Anthropic SDK for
-Claude, the OpenAI SDK for OpenAI, and the OpenAI SDK pointed at DeepSeek's base URL for
-DeepSeek. Provide a key for whichever provider(s) you use:
+Claude, the OpenAI SDK for OpenAI, and the OpenAI SDK pointed at Z.ai's (default, GLM)
+or DeepSeek's base URL for those providers. Provide a key for whichever provider(s)
+you use:
 
 ```bash
 cp .env.example .env   # then fill in the keys you have
 # …or export them in your shell:
-export DEEPSEEK_API_KEY=...   # default model
-export OPENAI_API_KEY=...
+export Z_AI_API_KEY=...       # Z.ai / GLM (default model)
 export ANTHROPIC_API_KEY=...
+export OPENAI_API_KEY=...
+export DEEPSEEK_API_KEY=...
 ```
 
-Switch models from the terminal with `model <id>` (default `deepseek-chat`). Usage bills
+Switch models from the terminal with `model <id>` (default `glm-5.3-flash`). Usage bills
 to your own provider key. Creating/deleting a skill writes/removes a `SKILL.md` folder
 under `~/.hermes`; every path is validated to stay inside it, and deletes require the
 agent to confirm with you first.
 
-> The `gpt-5.5` and DeepSeek model strings in `agent.py` are best-effort defaults —
-> adjust them if a provider has renamed a model.
+> The model strings in `agent.py` (`glm-5.3-flash`, `gpt-5.5`, DeepSeek V4, …) are
+> best-effort defaults — adjust them if a provider has renamed a model.
 
 ## Sync Behavior
 
@@ -116,7 +118,7 @@ wraps the backend + frontend into a double-clickable `.app` in `/Applications`.
 |------|---------|-------|
 | **8765** | **Desktop app backend** | The bundled backend listens here. The app's webview loads `http://127.0.0.1:8765`. |
 | **8000** | **Dev backend** | `uvicorn server:app --port 8000` during local development. |
-| **5173 / 5174** | **Vite dev server** | The frontend dev server (`npm run dev`). Proxies API calls to :8000. |
+| **5173 / 5174** | **Vite dev server** | The frontend dev server (`npm run dev`). The app calls the API on :8000 directly (localhost CORS). |
 
 > ⚠️ **The frontend auto-detects its environment** (`frontend/src/lib/api.js`):
 > if the page itself is served on port 8765 (the app), it uses same-origin `/api`;

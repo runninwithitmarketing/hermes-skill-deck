@@ -9,7 +9,6 @@ import { fetchDashboardData, syncSkills } from "./lib/api";
 import {
   countByDisplayFolder,
   countBySubfolder,
-  displayFolders,
   filterDisplaySkills,
   getFirstMatchingSubfolderId,
   getFolderDefinition,
@@ -303,7 +302,9 @@ export default function App() {
     [dashboard.skills, selectedProfile],
   );
   const folders = useMemo(
-    () => applyFolderOrder(countByDisplayFolder(skills), folderOrders[folderOrderKey]),
+    // hideEmpty: a lane the user has no skills for stays off the desktop grid
+    // (and the folder sidebar), instead of showing as a dead "0 skills" tile.
+    () => applyFolderOrder(countByDisplayFolder(skills, { hideEmpty: true }), folderOrders[folderOrderKey]),
     [skills, folderOrders, folderOrderKey, taxonomyVersion],
   );
   const foldersWithOverrides = useMemo(
@@ -529,7 +530,11 @@ export default function App() {
         return;
       }
 
-      const folder = displayFolders.find((item) => matchesNavigationLabel(item, target));
+      // Resolve against the live folder list (renames applied, custom boxes
+      // included) by stable id first, then by label for legacy label targets.
+      const folder = foldersWithOverrides.find(
+        (item) => item.id === target || matchesNavigationLabel(item, target),
+      );
       if (folder) {
         if (subfolderId) {
           pushNav({ folderId: folder.id, subfolderId, skillId: null }, `/${folder.id}`);
@@ -538,7 +543,7 @@ export default function App() {
         }
       }
     },
-    [openFolder, goHome, pushNav],
+    [openFolder, goHome, pushNav, foldersWithOverrides],
   );
 
   const handleDockAction = useCallback(
@@ -588,6 +593,7 @@ export default function App() {
         onSync={handleSync}
         theme={theme}
         onToggleTheme={toggleTheme}
+        folders={foldersWithOverrides}
       />
 
       {view === "detail" ? (
