@@ -68,5 +68,5 @@ both by hand.
 | 2026-09-16 | dev → remote → test copy | dev `main` pushed (10 commits); test copy fast-forwarded to v0.1.2 — all three locations now current | 0.1.2 |
 
 **Current status: fully in sync (2026-09-16) — dev, test copy, and public all
-at v0.1.2; all shared files identical. Public repo is PRIVATE pending final
-review.**
+at v0.1.2; all shared files identical. Public (live) repo is PUBLIC as of
+2026-09-16 — v0.1.2 downloads are open to everyone.**
