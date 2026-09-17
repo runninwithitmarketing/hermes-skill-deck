@@ -1,12 +1,17 @@
 # PUBLISH.md — local dev repo ↔ public release repo
 
-This file tracks the relationship between the two repos so it's always clear
-what is up to date where:
+This file tracks the relationship between the working copies so it's always
+clear what is up to date where:
 
-| | Local (dev) | Public (release) |
-|---|---|---|
-| Repo | `~/Desktop/Hermes Projects/1 - Hermes Skills Dashboard App` | `github.com/runninwithitmarketing/hermes-skill-deck` |
-| Role | Where features get built and tested (`npm run app:build` → test app in `src-tauri/target/release/bundle/macos/`) | What the world sees; tagged `v*` builds the release DMGs via `.github/workflows/release.yml` |
+| | Local (dev) | Test copy | Public (release) |
+|---|---|---|---|
+| Path / repo | `~/Desktop/Hermes Projects/1 - Hermes Skills Dashboard App` | `~/Desktop/Hermes Projects/1 - Hermes Skills Dashboard` | `github.com/runninwithitmarketing/hermes-skill-deck` |
+| Git | `runninwithitmarketing/hermes-skills-dashboard` (private) `main` — **this is where commits land** | Same repo + branch — a clean checkout kept for building/test-driving releases without touching the dev working tree | Separate repo — receives file copies + `v*` tags |
+| Role | Where features get built and tested (`npm run app:build` → test app in `src-tauri/target/release/bundle/macos/`) | Pull `main`, build the app, click around; never edit code here | What the world sees; tagged `v*` builds the release DMGs via `.github/workflows/release.yml` |
+
+**Keeping the test copy fresh:** in the dev repo `git push origin main`, then
+in the test copy `git pull --ff-only`. Never file-copy into it — it shares the
+dev repo's git history, so git keeps it honest.
 
 ## Rule of thumb
 
@@ -60,6 +65,8 @@ both by hand.
 | 2026-09-16 | → public | v0.1.2: README screenshots + version bump; tagged release built | 0.1.2 |
 | 2026-09-16 | ← local | `menu-cascades.png`, `quick-access.png`, corrected `terminal-mode.png` (added on GitHub), README table row mirrored | 0.1.2 |
 | 2026-09-16 | → public | `Cargo.lock` refreshed to 0.1.2 | 0.1.2 |
+| 2026-09-16 | dev → remote → test copy | dev `main` pushed (10 commits); test copy fast-forwarded to v0.1.2 — all three locations now current | 0.1.2 |
 
-**Current status: fully in sync (2026-09-16) — all shared files identical;
-repos at v0.1.2. Repo is PRIVATE pending final review.**
+**Current status: fully in sync (2026-09-16) — dev, test copy, and public all
+at v0.1.2; all shared files identical. Public repo is PRIVATE pending final
+review.**
