@@ -1,7 +1,7 @@
 {
   "name": "hermes-skill-deck-app",
   "private": true,
-  "version": "0.1.4",
+  "version": "0.1.5",
   "scripts": {
     "tauri": "tauri",
     "app:dev": "tauri dev",

@@ -160,6 +160,7 @@ export default function Desktop({
   onToggleTheme,
   taxonomyVersion = 0,
   onReorderFolders,
+  favoriteSkills,
 }) {
   const searchFolders = useMemo(() => {
     const raw = search.trim() ? countByDisplayFolder(filteredSkills, { hideEmpty: true }) : folders;
@@ -450,6 +451,8 @@ export default function Desktop({
           onOpenFolder={onOpenFolder}
           theme={theme}
           onToggleTheme={onToggleTheme}
+          favoriteSkills={favoriteSkills}
+          onOpenSkill={onOpenSkill}
         />
       </div>
     </main>

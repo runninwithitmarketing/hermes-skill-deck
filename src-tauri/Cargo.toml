@@ -1,6 +1,6 @@
 [package]
 name = "hermes-skill-deck"
-version = "0.1.4"
+version = "0.1.5"
 description = "Hermes Skill Deck desktop app"
 authors = ["Jason Pollak"]
 edition = "2021"
