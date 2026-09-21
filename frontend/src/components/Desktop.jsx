@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, Loader2, Plus, X } from "lucide-react";
 import { countByDisplayFolder, createCustomFolder, deleteCustomFolder, displayFolderLabel, getPrimaryFolderId, matchSuggestionForLabel, setCustomFolderRule, suggestCustomFolders } from "../lib/displayTaxonomy";
 import { categoryLabel, countLabel, titleize } from "../lib/format";
@@ -159,6 +159,7 @@ export default function Desktop({
   theme = "dark",
   onToggleTheme,
   taxonomyVersion = 0,
+  onReorderFolders,
 }) {
   const searchFolders = useMemo(() => {
     const raw = search.trim() ? countByDisplayFolder(filteredSkills, { hideEmpty: true }) : folders;
@@ -211,25 +212,104 @@ export default function Desktop({
   // below as a way to jump into a filtered folder view.
   const [showAllSkills, setShowAllSkills] = useState(false);
 
+  // ── Folder tile reordering (pointer events — HTML5 DnD is unreliable in
+  // the macOS WKWebView; same threshold+hit-test pattern as the Dock's
+  // profile strip). Disabled while railed (Terminal) or during a search,
+  // where the grid is a filtered subset and reordering would scramble. ──
+  const canReorderFolders = Boolean(onReorderFolders) && !terminalActive && !search.trim();
+  const [dragFolderId, setDragFolderId] = useState(null);
+  const [dropFolderId, setDropFolderId] = useState(null);
+  const [dragEngaged, setDragEngaged] = useState(false);
+  const pressRef = useRef(null);
+  const dropRef = useRef(null);
+  const suppressClickRef = useRef(false);
+
+  useEffect(() => {
+    if (dragFolderId === null) return undefined;
+    const handleMove = (e) => {
+      const st = pressRef.current;
+      if (!st) return;
+      if (!st.engaged && Math.hypot(e.clientX - st.startX, e.clientY - st.startY) > 6) {
+        st.engaged = true;
+        setDragEngaged(true);
+      }
+      if (!st.engaged) return;
+      const hit = document.elementFromPoint(e.clientX, e.clientY);
+      const target = hit && hit.closest("[data-folder-id]");
+      const tid = target && target.dataset.folderId !== st.id ? target.dataset.folderId : null;
+      dropRef.current = tid;
+      setDropFolderId((cur) => (cur === tid ? cur : tid));
+    };
+    const handleUp = () => {
+      const st = pressRef.current;
+      pressRef.current = null;
+      if (st && st.engaged) {
+        suppressClickRef.current = true;
+        const dropId = dropRef.current;
+        if (dropId) {
+          const ids = searchFolders.map((f) => f.id);
+          const from = ids.indexOf(st.id);
+          const to = ids.indexOf(dropId);
+          if (from !== -1 && to !== -1) {
+            ids.splice(to, 0, ids.splice(from, 1)[0]);
+            onReorderFolders(ids);
+          }
+        }
+      }
+      setDragFolderId(null);
+      setDropFolderId(null);
+      setDragEngaged(false);
+      dropRef.current = null;
+    };
+    window.addEventListener("pointermove", handleMove);
+    window.addEventListener("pointerup", handleUp);
+    window.addEventListener("pointercancel", handleUp);
+    return () => {
+      window.removeEventListener("pointermove", handleMove);
+      window.removeEventListener("pointerup", handleUp);
+      window.removeEventListener("pointercancel", handleUp);
+    };
+  }, [dragFolderId, searchFolders, onReorderFolders]);
+
   const renderFolderGrid = (withNewTile) => (
     <div
       ref={gridRef}
       className={`grid grid-cols-2 gap-x-4 gap-y-9 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 ${terminalActive ? "folders-railed" : ""}`}
     >
       {searchFolders.map((folder, index) => (
-        <FolderCard
+        <div
           key={folder.id}
-          count={folder.count}
-          folder={folder}
-          index={index}
-          onClick={() => onOpenFolder(folder.id)}
-          onColorOverride={onColorOverride}
-          onRenameOverride={onRenameOverride}
-          onResetOverride={onResetOverride}
-          onDeleteFolder={deleteCustomFolder}
-          onSetFolderRule={setCustomFolderRule}
-          railed={terminalActive}
-        />
+          data-folder-id={folder.id}
+          onPointerDown={(e) => {
+            if (e.button !== 0 || !canReorderFolders) return;
+            pressRef.current = { id: folder.id, startX: e.clientX, startY: e.clientY, engaged: false };
+            setDragFolderId(folder.id);
+          }}
+          onClickCapture={(e) => {
+            // A finished drag must not also open the folder.
+            if (suppressClickRef.current) {
+              suppressClickRef.current = false;
+              e.stopPropagation();
+              e.preventDefault();
+            }
+          }}
+          className={`relative transition ${dragEngaged && dragFolderId === folder.id ? "opacity-50" : ""} ${
+            dropFolderId === folder.id ? "z-10 rounded-[2rem] ring-2 ring-sky-300/70" : ""
+          }`}
+        >
+          <FolderCard
+            count={folder.count}
+            folder={folder}
+            index={index}
+            onClick={() => onOpenFolder(folder.id)}
+            onColorOverride={onColorOverride}
+            onRenameOverride={onRenameOverride}
+            onResetOverride={onResetOverride}
+            onDeleteFolder={deleteCustomFolder}
+            onSetFolderRule={setCustomFolderRule}
+            railed={terminalActive}
+          />
+        </div>
       ))}
       {withNewTile && !terminalActive && <NewFolderTile key="new-folder-tile" suggestions={folderSuggestions} />}
     </div>
