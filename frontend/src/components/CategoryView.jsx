@@ -19,7 +19,7 @@ export default function CategoryView({
   currentSkills,
   selectedSkillId,
   onSelectSkill,
-  favoriteIds,
+  favoriteNames,
   onToggleFavorite,
   allSkills = [],
   onOpenSkill,
@@ -133,7 +133,7 @@ export default function CategoryView({
                 skills={currentSkills}
                 selectedSkillId={selectedSkillId}
                 onSelectSkill={onSelectSkill}
-                favoriteIds={favoriteIds}
+                favoriteNames={favoriteNames}
                 onToggleFavorite={onToggleFavorite}
                 relatedPool={allSkills}
                 onOpenRelated={onOpenSkill}

@@ -170,14 +170,47 @@ export default function App() {
   }
 
   // ── Skill favorites (star toggle) ──
-  const [favoriteIds, setFavoriteIds] = useState(() => {
+  // Keyed by skill NAME, not DB row id: row ids are reassigned whenever the
+  // database is rebuilt (reinstall, fresh scan), which silently orphaned
+  // favorites; names are stable. Legacy numeric entries migrate once.
+  const [favoriteNames, setFavoriteNames] = useState(() => {
     try {
       const stored = JSON.parse(localStorage.getItem("skill-favorites") || "[]");
-      return Array.isArray(stored) ? stored : [];
+      return Array.isArray(stored) ? stored.filter((v) => typeof v === "string") : [];
     } catch {
       return [];
     }
   });
+  const favoritesMigratedRef = useRef(false);
+
+  // One-time migration: convert legacy numeric row ids to skill names once
+  // real (non-demo) dashboard data is available.
+  useEffect(() => {
+    if (favoritesMigratedRef.current || loading || offline) return;
+    let raw;
+    try {
+      raw = JSON.parse(localStorage.getItem("skill-favorites") || "[]");
+    } catch {
+      raw = [];
+    }
+    if (!Array.isArray(raw) || !raw.some((v) => typeof v === "number")) {
+      favoritesMigratedRef.current = true;
+      return;
+    }
+    const byId = new Map(dashboard.skills.map((s) => [s.id, s.name]));
+    const migrated = [
+      ...new Set([
+        ...favoriteNames,
+        ...raw
+          .filter((v) => typeof v === "number")
+          .map((id) => byId.get(id))
+          .filter(Boolean),
+      ]),
+    ];
+    favoritesMigratedRef.current = true;
+    setFavoriteNames(migrated);
+    localStorage.setItem("skill-favorites", JSON.stringify(migrated));
+  }, [loading, offline, dashboard.skills, favoriteNames]);
 
   // ── Folder order (drag-and-drop, saved per profile) ──
   const [folderOrders, setFolderOrders] = useState(loadFolderOrders);
@@ -186,16 +219,11 @@ export default function App() {
   // ── Dock profile order (drag-and-drop, one global order) ──
   const [profileOrder, setProfileOrder] = useState(() => loadStoredList(PROFILE_ORDER_STORAGE_KEY));
 
-  function saveFavorites(next) {
-    setFavoriteIds(next);
-    localStorage.setItem("skill-favorites", JSON.stringify(next));
-  }
-
-  const toggleFavorite = useCallback((skillId) => {
-    setFavoriteIds((current) => {
-      const next = current.includes(skillId)
-        ? current.filter((id) => id !== skillId)
-        : [...current, skillId];
+  const toggleFavorite = useCallback((skillName) => {
+    setFavoriteNames((current) => {
+      const next = current.includes(skillName)
+        ? current.filter((name) => name !== skillName)
+        : [...current, skillName];
       localStorage.setItem("skill-favorites", JSON.stringify(next));
       return next;
     });
@@ -348,12 +376,12 @@ export default function App() {
     };
   }, [skills, selectedProfile, profiles]);
   const recentSkills = useMemo(() => sortRecent(skills), [skills]);
-  // Full skill objects for the favorited IDs (in the order they were starred).
+  // Full skill objects for the favorited names (in the order they were starred).
   const favoriteSkills = useMemo(() => {
-    if (!favoriteIds.length) return [];
-    const byId = new Map(skills.map((s) => [s.id, s]));
-    return favoriteIds.map((id) => byId.get(id)).filter(Boolean);
-  }, [skills, favoriteIds]);
+    if (!favoriteNames.length) return [];
+    const byName = new Map(skills.map((s) => [s.name, s]));
+    return favoriteNames.map((name) => byName.get(name)).filter(Boolean);
+  }, [skills, favoriteNames]);
   const selectedFolder = useMemo(() => getFolderDefinition(selectedFolderId), [selectedFolderId, taxonomyVersion]);
 
   const desktopFilteredSkills = useMemo(() => filterDisplaySkills(skills, { search, profile: selectedProfile }), [skills, search, selectedProfile, taxonomyVersion]);
@@ -660,7 +688,7 @@ export default function App() {
           currentSkills={currentSkills}
           selectedSkillId={selectedSkillId}
           onSelectSkill={handleSelectSkill}
-          favoriteIds={favoriteIds}
+          favoriteNames={favoriteNames}
           onToggleFavorite={toggleFavorite}
           allSkills={skills}
           onOpenSkill={openSkill}
@@ -719,7 +747,7 @@ export default function App() {
           onToggleTheme={toggleTheme}
           favoriteSkills={favoriteSkills}
           taxonomyVersion={taxonomyVersion}
-          favoriteIds={favoriteIds}
+          favoriteNames={favoriteNames}
           onToggleFavorite={toggleFavorite}
         />
       )}

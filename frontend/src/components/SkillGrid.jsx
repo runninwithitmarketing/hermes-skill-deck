@@ -405,7 +405,7 @@ export default function SkillGrid({
   skills,
   selectedSkillId,
   onSelectSkill,
-  favoriteIds = [],
+  favoriteNames = [],
   onToggleFavorite,
   relatedPool = [],
   onOpenRelated,
@@ -454,7 +454,7 @@ export default function SkillGrid({
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {skills.map((skill, index) => {
           const selected = selectedSkillId === skill.id;
-          const isFavorite = favoriteIds.includes(skill.id);
+          const isFavorite = favoriteNames.includes(skill.name);
           const primaryFolderId = getPrimaryFolderId(skill);
           const visual = getCategoryVisual(`${primaryFolderId} ${displayFolderLabel(primaryFolderId)}`, index);
           const Icon = visual.Icon;
@@ -502,13 +502,13 @@ export default function SkillGrid({
                             title={isFavorite ? "Remove from favorites" : "Add to favorites"}
                             onClick={(e) => {
                               e.stopPropagation();
-                              onToggleFavorite(skill.id);
+                              onToggleFavorite(skill.name);
                             }}
                             onKeyDown={(e) => {
                               if (e.key === "Enter" || e.key === " ") {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                onToggleFavorite(skill.id);
+                                onToggleFavorite(skill.name);
                               }
                             }}
                             className={`favorite-star cursor-pointer rounded-md p-0.5 transition hover:bg-white/12 ${
